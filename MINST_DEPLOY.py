@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 
 sess = tf.InteractiveSession()
+
 x = tf.placeholder("float", shape=[ 28, 28])
 #y_ = tf.placeholder("float", shape=[None, 10])
 
@@ -17,6 +18,7 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
+#build the model
 W_conv1 = weight_variable([5, 5, 1 ,32])
 b_conv1 = bias_variable([32])
 x_image = tf.reshape(x, [-1, 28, 28, 1])
@@ -40,19 +42,21 @@ h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 W_fc2 = weight_variable([1024, 10])
 b_fc2 = bias_variable([10])
 
-y_conv = tf.nn. softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
-#result = tf.argmax(y_conv,1)
+y_conv = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 saver = tf.train.Saver()
 
+#load the model
 sess = tf.Session()
 saver.restore(sess, "model.ckpt")
 
-
+#load the image
 img_raw = cv2.imread("1.jpg", 0)
 _,img = cv2.threshold(img_raw, 128, 255, cv2.THRESH_BINARY_INV)
 img = cv2.normalize(img.astype('float'), None, 0.0, 1.0, cv2.NORM_MINMAX)
+#resize to 28x28 to feed into the model
 img = cv2.resize(img, dsize=(28, 28), interpolation = cv2.INTER_LINEAR )
 
+#print y_conv, the probablities of each digit
 print sess.run(y_conv, feed_dict={x: img, keep_prob: 1.0})[0]
 
 
